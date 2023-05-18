@@ -44,6 +44,7 @@ class GameOfLife {
         i++;
       }
     } while (i < totalCells);
+    population = totalCells;
   }
 
   // determina lo stato successivo della cellula
