@@ -5,6 +5,8 @@ class GameOfLife {
   static const size = 30;
   // griglia di cellule 0,1
   late List<List<int>> world;
+  // numero di cellule attive
+  int population = 0;
 
   // azzera lo stato delle cellule
   void clearWorld() {
@@ -31,50 +33,67 @@ class GameOfLife {
 
   // determina lo stato successivo della cellula
   // in base all'attuale stato dei suoi vicini
-  int newState(int row, int col) {
+  int newState(int y, int x) {
     //
-    // se [row,col] è la posizione della cella da valutare
+    // se [y,x] è la posizione della cella da valutare
     // i suoi vicini sono:
     //
-    // [t,l  ]    [t,col]  [t,r  ]
-    // [row,l]   [row,col] [row,r]
-    // [bl   ]    [b,col]  [br   ]
+    // [t,l] [t,c] [t,r]
+    // [r,l] [y,x] [r,r]
+    // [b,l] [b,c] [b,r]
     //
 
     // effetto PacMan
-    int t = (row > 0) ? (row - 1) : (size - 1);
-    int b = (row < (size - 1)) ? (row + 1) : 0;
+    int t = (y > 0) ? (y - 1) : (size - 1);
+    int b = (y < (size - 1)) ? (y + 1) : 0;
 
-    int l = (col > 0) ? (col - 1) : (size - 1);
-    int r = (col < (size - 1)) ? (col + 1) : 0;
+    int l = (x > 0) ? (x - 1) : (size - 1);
+    int r = (x < (size - 1)) ? (x + 1) : 0;
 
     int neighborsAlive = world[t][l] +
-        world[t][col] +
+        world[t][x] +
         world[t][r] +
-        world[row][l] +
-        world[row][r] +
+        world[y][l] +
+        world[y][r] +
         world[b][l] +
-        world[b][col] +
+        world[b][x] +
         world[b][r];
 
     int newState = 0;
     // Qualsiasi cella viva con meno di due celle vive adiacenti muore;
-    if ((world[row][col] == 1) && (neighborsAlive < 2)) {
+    if ((world[y][x] == 1) && (neighborsAlive < 2)) {
       newState = 0;
     }
     // Qualsiasi cella viva con due o tre celle vive adiacenti sopravvive;
-    if ((world[row][col] == 1) &&
-        (neighborsAlive == 2 || neighborsAlive == 3)) {
+    if ((world[y][x] == 1) && (neighborsAlive == 2 || neighborsAlive == 3)) {
       newState = 1;
     }
     // Qualsiasi cella viva con più di tre celle vive adiacenti muore;
-    if ((world[row][col] == 1) && (neighborsAlive > 3)) {
+    if ((world[y][x] == 1) && (neighborsAlive > 3)) {
       newState = 0;
     }
     // Qualsiasi cella morta con esattamente tre celle vive adiacenti diventa una cella viva;
-    if ((world[row][col] == 0) && (neighborsAlive == 3)) {
+    if ((world[y][x] == 0) && (neighborsAlive == 3)) {
       newState = 1;
     }
     return newState;
+  }
+
+  // valuta lo stato successivo per tutte le cellule
+  List<List<int>> nextWorld() {
+    // crea un mondo nuovo vuoto
+    List<List<int>> newWorld =
+        List.generate(size, (_) => List<int>.filled(size, 0));
+
+    population = 0;
+    for (var row = 0; row < size; ++row) {
+      for (var col = 0; col < size; ++col) {
+        newWorld[row][col] = newState(row, col);
+        // conta le celle attive
+        population += newWorld[row][col];
+      }
+    }
+
+    return newWorld;
   }
 }
