@@ -7,9 +7,23 @@ class GameOfLife {
   late List<List<int>> world;
   // numero di cellule attive
   int population = 0;
+  // generazione corrente
+  int generation = 0;
+
+  // ritorna la dimensione della griglia
+  int getSize() {
+    return size;
+  }
+
+  // ritorna lo stato di una cella
+  bool isAlive(int row, int col) {
+    return (world[row][col] == 1);
+  }
 
   // azzera lo stato delle cellule
   void clearWorld() {
+    population = 0;
+    generation = 0;
     world = List.generate(size, (_) => List<int>.filled(size, 0));
   }
 
@@ -18,13 +32,14 @@ class GameOfLife {
     clearWorld();
 
     final random = Random();
-    final totalCells = random.nextInt((size * size * 0.5).round());
-    var i = 0;
+    final totalCells = random.nextInt((size * size * 0.2).round()) +
+        (size * size * 0.2).round();
+    int i = 0;
     do {
-      var r = random.nextInt(size);
-      var c = random.nextInt(size);
-      if (world[r][c] == 0) {
-        // se la cellula non è stata già attivata
+      int r = random.nextInt(size);
+      int c = random.nextInt(size);
+      // se la cellula non è stata già attivata
+      if (!isAlive(r, c)) {
         world[r][c] = 1;
         i++;
       }
@@ -61,39 +76,40 @@ class GameOfLife {
 
     int newState = 0;
     // Qualsiasi cella viva con meno di due celle vive adiacenti muore;
-    if ((world[y][x] == 1) && (neighborsAlive < 2)) {
+    if (isAlive(y, x) && (neighborsAlive < 2)) {
       newState = 0;
     }
     // Qualsiasi cella viva con due o tre celle vive adiacenti sopravvive;
-    if ((world[y][x] == 1) && (neighborsAlive == 2 || neighborsAlive == 3)) {
+    if (isAlive(y, x) && (neighborsAlive == 2 || neighborsAlive == 3)) {
       newState = 1;
     }
     // Qualsiasi cella viva con più di tre celle vive adiacenti muore;
-    if ((world[y][x] == 1) && (neighborsAlive > 3)) {
+    if (isAlive(y, x) && (neighborsAlive > 3)) {
       newState = 0;
     }
     // Qualsiasi cella morta con esattamente tre celle vive adiacenti diventa una cella viva;
-    if ((world[y][x] == 0) && (neighborsAlive == 3)) {
+    if (!isAlive(y, x) && (neighborsAlive == 3)) {
       newState = 1;
     }
     return newState;
   }
 
-  // valuta lo stato successivo per tutte le cellule
-  List<List<int>> nextWorld() {
+  // aggiorna lo stato per tutte le cellule
+  // a passa alla generazione successiva
+  void nextWorld() {
     // crea un mondo nuovo vuoto
     List<List<int>> newWorld =
         List.generate(size, (_) => List<int>.filled(size, 0));
 
     population = 0;
-    for (var row = 0; row < size; ++row) {
-      for (var col = 0; col < size; ++col) {
+    for (int row = 0; row < size; ++row) {
+      for (int col = 0; col < size; ++col) {
         newWorld[row][col] = newState(row, col);
         // conta le celle attive
         population += newWorld[row][col];
       }
     }
-
-    return newWorld;
+    generation++;
+    world = newWorld;
   }
 }
